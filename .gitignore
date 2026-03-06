@@ -7,8 +7,8 @@ build/
 *.egg-info/
 .eggs/
 
-# Data
-data/
+# Runtime data (SQLite, caches)
+/data/
 *.db
 
 # Frontend
