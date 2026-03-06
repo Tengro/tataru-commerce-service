@@ -2,32 +2,43 @@
 
 ## Current Status
 
-**Phase 0 + Phase 1a/1b: DONE**
+**Phase 0 + Phase 1: DONE**
 
-Repo bootstrapped with:
-- [x] Scanner package (from ffxiv-profit-scanner, unchanged)
-- [x] FastAPI API: `/api/v1/scans/{type}`, `/status`, `/worlds`
+### Phase 0: Project Setup
+- [x] New repo created (separate from ffxiv-profit-scanner)
+- [x] Scanner package copied (unchanged from v0.4.2)
+- [x] Directory structure: `backend/` + `frontend/` (placeholder)
+- [x] CI: GitHub Actions, Python 3.10 + 3.12
+
+### Phase 1a: FastAPI Backend
+- [x] FastAPI app with CORS, lifespan management
 - [x] Pydantic response models for all 5 scan types
-- [x] Background scheduler (APScheduler) — runs scans hourly, stores in SQLite
-- [x] SQLite DB for pre-computed scan results
-- [x] Docker Compose + Dockerfile
-- [x] CI: GitHub Actions, 23 tests on Python 3.10 + 3.12
+- [x] Endpoints: `GET /api/v1/scans/{type}`, `/status`, `/worlds`
+- [x] Query params: `sort_by`, `min_profit`, `min_velocity`, `limit`
+- [x] Swagger docs at `/docs`
+
+### Phase 1b: Scheduler
+- [x] APScheduler runs all scan modes hourly for configured DCs
+- [x] Non-blocking startup (initial scan runs in background thread)
+- [x] Results stored in SQLite `scan_results` table
+- [x] `POST /api/v1/scans/trigger` for manual scan kicks
+- [x] Logging: scan duration, result counts, errors
+
+### Phase 1c: DB-backed API cache
+- [x] `api_cache` SQLite table (namespace, key, data, cached_at)
+- [x] Rewrote `scanner/cache.py` — same `get()`/`put()` interface, backed by SQLite
+- [x] TTL checks via SQL, `namespace_age()` via `MAX(cached_at)` query
+- [x] 9 cache tests (TTL expiry, allow_stale, clear, namespace isolation)
+- [x] Everything in one DB file (`data/tcs.db`)
+
+### Phase 1 totals
+- 32 tests passing
+- Backend verified end-to-end: real Chaos DC scan data served via API
+- Docker Compose + Dockerfile ready
 
 ---
 
-## Phase 1c: DB-backed API cache
-
-Replace the file-based cache (`~/.ffxiv-scanner/`) with the `api_cache` SQLite table so everything lives in one DB.
-
-- [ ] Add `api_cache` table (namespace, key, data, cached_at)
-- [ ] New `cache_db.py` with same `get()`/`put()` interface as current `scanner/cache.py`
-- [ ] Swap imports in scanner code: `from scanner import cache` → new DB-backed cache
-- [ ] TTL checks via SQL instead of file timestamps
-- [ ] `namespace_age()` → simple query
-
----
-
-## Phase 2: React Frontend (MVP)
+## Phase 2: React Frontend (MVP) ← NEXT
 
 ### 2a: Project Setup
 - [ ] Vite + React + TypeScript
