@@ -1,0 +1,17 @@
+[project]
+name = "tataru-commerce-service"
+version = "0.1.0"
+description = "Tataru Commerce Service — FFXIV Market Board profit scanner API"
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+    "fastapi",
+    "uvicorn[standard]",
+    "apscheduler>=3.10,<4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "httpx"]
+
+[tool.setuptools.packages.find]
+include = ["scanner*", "api*"]
