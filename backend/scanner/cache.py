@@ -1,10 +1,9 @@
+"""API cache backed by SQLite — same interface as the old file-based cache."""
+
 import json
-import os
 import time
-from pathlib import Path
 
-
-CACHE_DIR = Path.home() / ".ffxiv-scanner"
+from db import get_connection
 
 # TTL in seconds; None = infinite
 NAMESPACE_TTL = {
@@ -13,79 +12,62 @@ NAMESPACE_TTL = {
 }
 
 
-def _cache_path(namespace: str, key: str) -> Path:
-    return CACHE_DIR / namespace / f"{key}.json"
-
-
-def get(namespace: str, key: str, allow_stale: bool = False) -> dict | None:
-    path = _cache_path(namespace, key)
-    if not path.exists():
-        return None
+def get(namespace: str, key: str, allow_stale: bool = False):
+    conn = get_connection()
     try:
-        data = json.loads(path.read_text())
-    except (json.JSONDecodeError, OSError):
-        return None
-    ttl = NAMESPACE_TTL.get(namespace)
-    if ttl is not None and not allow_stale:
-        cached_at = data.get("_cached_at", 0)
-        if time.time() - cached_at > ttl:
+        row = conn.execute(
+            "SELECT data, cached_at FROM api_cache WHERE namespace=? AND key=?",
+            (namespace, key),
+        ).fetchone()
+        if row is None:
             return None
-    return data.get("payload")
+        ttl = NAMESPACE_TTL.get(namespace)
+        if ttl is not None and not allow_stale:
+            if time.time() - row["cached_at"] > ttl:
+                return None
+        return json.loads(row["data"])
+    finally:
+        conn.close()
+
+
+def put(namespace: str, key: str, payload) -> None:
+    now = time.time()
+    conn = get_connection()
+    try:
+        conn.execute(
+            """INSERT INTO api_cache (namespace, key, data, cached_at)
+               VALUES (?, ?, ?, ?)
+               ON CONFLICT(namespace, key)
+               DO UPDATE SET data=excluded.data, cached_at=excluded.cached_at""",
+            (namespace, key, json.dumps(payload), now),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def namespace_age(namespace: str) -> float | None:
     """Return age in seconds of the most recent write in a namespace, or None if empty."""
-    meta_path = CACHE_DIR / namespace / "_last_updated.json"
-    if meta_path.exists():
-        try:
-            data = json.loads(meta_path.read_text())
-            return time.time() - data.get("_cached_at", 0)
-        except (json.JSONDecodeError, OSError):
-            pass
-    # Fallback: check if namespace dir exists at all
-    ns_dir = CACHE_DIR / namespace
-    if not ns_dir.exists() or not any(ns_dir.iterdir()):
-        return None
-    # No metadata yet — scan once to bootstrap (will be fast next time)
-    newest = 0.0
-    for f in ns_dir.iterdir():
-        if f.name == "_last_updated.json":
-            continue
-        try:
-            data = json.loads(f.read_text())
-            cached_at = data.get("_cached_at", 0)
-            if cached_at > newest:
-                newest = cached_at
-        except (json.JSONDecodeError, OSError):
-            continue
-    if newest > 0:
-        _write_namespace_meta(namespace, newest)
-        return time.time() - newest
-    return None
-
-
-def _write_namespace_meta(namespace: str, cached_at: float) -> None:
-    path = CACHE_DIR / namespace / "_last_updated.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"_cached_at": cached_at}))
-
-
-def put(namespace: str, key: str, payload: dict) -> None:
-    now = time.time()
-    path = _cache_path(namespace, key)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    data = {"_cached_at": now, "payload": payload}
-    path.write_text(json.dumps(data))
-    _write_namespace_meta(namespace, now)
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT MAX(cached_at) as latest FROM api_cache WHERE namespace=?",
+            (namespace,),
+        ).fetchone()
+        if row is None or row["latest"] is None:
+            return None
+        return time.time() - row["latest"]
+    finally:
+        conn.close()
 
 
 def clear(namespace: str | None = None) -> None:
-    if namespace:
-        ns_dir = CACHE_DIR / namespace
-        if ns_dir.exists():
-            for f in ns_dir.iterdir():
-                f.unlink()
-    else:
-        import shutil
-        if CACHE_DIR.exists():
-            shutil.rmtree(CACHE_DIR)
+    conn = get_connection()
+    try:
+        if namespace:
+            conn.execute("DELETE FROM api_cache WHERE namespace=?", (namespace,))
+        else:
+            conn.execute("DELETE FROM api_cache")
+        conn.commit()
+    finally:
+        conn.close()

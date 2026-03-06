@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS scan_results (
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_scan_lookup
     ON scan_results(scan_type, dc, world);
+
+CREATE TABLE IF NOT EXISTS api_cache (
+    namespace TEXT NOT NULL,
+    key TEXT NOT NULL,
+    data JSON NOT NULL,
+    cached_at REAL NOT NULL,
+    PRIMARY KEY (namespace, key)
+);
 """
 
 
