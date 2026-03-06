@@ -13,5 +13,5 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "httpx"]
 
-[tool.setuptools.packages.find]
-include = ["scanner*", "api*"]
+[tool.setuptools.packages]
+find = {include = ["scanner", "scanner.*", "api", "api.*"]}
