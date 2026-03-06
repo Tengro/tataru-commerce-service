@@ -2,6 +2,7 @@
 
 import dataclasses
 import logging
+import threading
 import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -50,16 +51,6 @@ def run_all_scans() -> None:
                 log.exception(f"  {mode_name}/{dc}: scan failed")
 
 
-def run_initial_if_needed() -> None:
-    """Run scans on startup if DB has no results."""
-    existing = db.get_all_scan_status()
-    if not existing:
-        log.info("No existing scan data — running initial scan...")
-        run_all_scans()
-    else:
-        log.info(f"Found {len(existing)} existing scan results, skipping initial scan")
-
-
 _scheduler: BackgroundScheduler | None = None
 
 
@@ -67,7 +58,13 @@ def start() -> None:
     """Start the background scheduler."""
     global _scheduler
 
-    run_initial_if_needed()
+    # Run initial scan in a background thread so the API starts responding immediately
+    existing = db.get_all_scan_status()
+    if not existing:
+        log.info("No existing scan data — initial scan will run in background")
+        threading.Thread(target=run_all_scans, name="initial-scan", daemon=True).start()
+    else:
+        log.info(f"Found {len(existing)} existing scan results")
 
     _scheduler = BackgroundScheduler()
     _scheduler.add_job(

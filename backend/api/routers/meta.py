@@ -1,8 +1,9 @@
-"""Meta endpoints — status, worlds."""
+"""Meta endpoints — status, worlds, manual triggers."""
 
+import threading
 import time
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 import db
@@ -70,3 +71,20 @@ def get_status() -> StatusResponse:
 @router.get("/worlds")
 def get_worlds() -> WorldsResponse:
     return WorldsResponse(data_centers=DC_WORLDS)
+
+
+_scan_lock = threading.Lock()
+
+
+@router.post("/scans/trigger")
+def trigger_scan():
+    """Manually trigger a full scan (runs in background)."""
+    if not _scan_lock.acquire(blocking=False):
+        raise HTTPException(409, "A scan is already running")
+    def _run():
+        try:
+            scheduler.run_all_scans()
+        finally:
+            _scan_lock.release()
+    threading.Thread(target=_run, name="manual-scan", daemon=True).start()
+    return {"status": "scan_started"}
