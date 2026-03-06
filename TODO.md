@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phase 0 + Phase 1: DONE**
+**Phase 0 + Phase 1: DONE | Phase 2a+2b+2c: DONE**
 
 ### Phase 0: Project Setup
 - [x] New repo created (separate from ffxiv-profit-scanner)
@@ -38,31 +38,41 @@
 
 ---
 
-## Phase 2: React Frontend (MVP) ← NEXT
+## Phase 2: React Frontend (MVP) — DONE
 
 ### 2a: Project Setup
-- [ ] Vite + React + TypeScript
-- [ ] Tailwind CSS + shadcn/ui (component library)
-- [ ] React Router for navigation
-- [ ] TanStack Query for API data fetching + client-side caching
+- [x] Vite + React 19 + TypeScript
+- [x] Tailwind CSS v4 + shadcn/ui (base-ui component library)
+- [x] React Router v7 for navigation
+- [x] TanStack Query v5 for API data fetching + client-side caching
+- [x] TanStack Table v8 for headless table logic
 
 ### 2b: Core Pages
-- [ ] **Layout:** Top nav with DC/World selector (persisted in localStorage), TCS branding
-- [ ] **Dashboard** (`/`): Overview cards — "X profitable crafts", "Y vendor flips", last scan time
-- [ ] **Craft Scanner** (`/craft`): Sortable/filterable table
-  - Columns: Item, Job, Craft Cost, MB Price, Margin, Margin %, Profit/Day, Velocity
-  - Click row → detail view (ingredient breakdown, cost sources)
-- [ ] **Vendor Arbitrage** (`/vendor`): NPC flip opportunities table
-- [ ] **Cross-World** (`/cross-world`): Buy/sell world spread table
-- [ ] **Discovery** (`/discover`): High-margin items table
-- [ ] **Gather** (`/gather`): Gatherable items with job/level filter inputs (MIN/BTN/FSH)
+- [x] **Layout:** Header with DC/World selector (persisted in localStorage), sidebar nav, FFXIV dark theme
+- [x] **Dashboard** (`/`): Overview cards per scan type, last scan time, trigger scan button
+- [x] **Craft Scanner** (`/craft`): Sortable/filterable table (Item, Craft Cost, MB Price, Margin, Margin%, Velocity, Profit/Day)
+- [x] **Vendor Arbitrage** (`/vendor`): NPC flip opportunities table
+- [x] **Cross-World** (`/cross-world`): Buy/sell world spread table
+- [x] **Discovery** (`/discover`): High-margin items table
+- [x] **Gather** (`/gather`): Gatherable items with job/level columns
 
 ### 2c: Shared Components
-- [ ] `<DataTable>` — sortable, filterable, paginated table (reuse across all modes)
-- [ ] `<ScanStatus>` — "Last updated: 15 min ago" badge
-- [ ] `<GilAmount>` — formatted gil display
-- [ ] `<JobIcon>` — crafter/gatherer job icon
-- [ ] Mobile-responsive: tables → card layout on small screens
+- [x] `<DataTable>` — sortable, filterable, paginated (50/page), generic with TanStack Table
+- [x] `<ScanStatusBadge>` — color-coded freshness ("15m ago" / "2h ago")
+- [x] Gil formatting via `format.ts` helpers (gil, pct, decimal, relativeTime)
+- [x] Stale row dimming (opacity on is_stale rows)
+- [x] Mobile-responsive: sidebar collapses to hamburger menu
+
+### 2d: Docker + Infrastructure
+- [x] Frontend Dockerfile (multi-stage: node build → nginx)
+- [x] nginx config: proxies `/api/` to backend, SPA fallback
+- [x] docker-compose updated with frontend service
+
+### Remaining for Phase 2 polish
+- [ ] Click row → detail view (ingredient breakdown for craft/discover)
+- [ ] Item images (Universalis-style, requires external icon source)
+- [ ] Job icons for gather/craft pages
+- [ ] Card layout on very small screens (currently table-only)
 
 ---
 

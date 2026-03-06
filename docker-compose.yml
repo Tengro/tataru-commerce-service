@@ -8,3 +8,10 @@ services:
     environment:
       - SCAN_DCS=Chaos
       - SCAN_INTERVAL_MINUTES=60
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
