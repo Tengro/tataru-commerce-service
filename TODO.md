@@ -68,39 +68,71 @@
 - [x] nginx config: proxies `/api/` to backend, SPA fallback
 - [x] docker-compose updated with frontend service
 
-### Remaining for Phase 2 polish
+### Remaining for Phase 2 polish (can interleave with 2.5)
 - [ ] Click row → detail view (ingredient breakdown for craft/discover)
-- [ ] Item images (Universalis-style, requires external icon source)
+- [ ] Item images (XIVAPI icon URLs)
 - [ ] Job icons for gather/craft pages
 - [ ] Card layout on very small screens (currently table-only)
+- [ ] Frontend CI (`npm run build` in GitHub Actions)
+
+---
+
+## Phase 2.5: Real-Time Price Feed (WebSocket + Hybrid Polling)
+
+Universalis provides a WebSocket API (`wss://universalis.app/api/v2/ws`, BSON protocol) with
+real-time events for listing and sale changes. This replaces heavy hourly polling with a
+passive subscription model — prices stay fresh continuously.
+
+### 2.5a: WebSocket Client
+- [ ] `scanner/ws_client.py` — async WebSocket client using `websockets` + `pymongo` (BSON)
+- [ ] Subscribe to `listings/add` + `sales/add` per configured DC
+- [ ] Auto-reconnect with exponential backoff (1s → 2s → … → 60s cap)
+- [ ] Parse events → update `api_cache` with fresh price data
+- [ ] Store raw `sales/add` events in `price_history` table (item_id, world, price, qty, timestamp) for Phase 3 analytics
+- [ ] Track connection state (connected / reconnecting / disconnected)
+
+### 2.5b: Scheduler Rework
+- [ ] **Quick scans** every 2 hours — craft, vendor, cross_world, gather (cache is mostly fresh from WS)
+- [ ] **Discovery scan** daily at 04:00 server time (quiet hours, expensive full-market sweep)
+- [ ] **Dirty-scan debounce** — when WS events update cached prices, mark affected scan types dirty; recalculate dirty scans every ~30s instead of on every event
+- [ ] Keep manual trigger endpoint as-is
+
+### 2.5c: Config + Status
+- [ ] `WS_ENABLED` env var (default `true`) — kill switch for WebSocket
+- [ ] `QUICK_SCAN_INTERVAL_HOURS` env var (default `2`)
+- [ ] `DISCOVERY_CRON` env var (default `"0 4 * * *"`)
+- [ ] `GET /api/v1/status` — expose WS connection state + last event timestamp
+
+### 2.5d: Frontend
+- [ ] Dashboard: WebSocket status indicator (green = live feed, yellow = reconnecting, red = polling only)
+- [ ] Show data freshness more prominently (near-real-time vs hours old)
 
 ---
 
 ## Phase 3: User Features
 
-- [ ] **Discord OAuth** login (optional — browsing works without login)
-- [ ] **Favorites:** Bookmark items, pinned to top of tables
-- [ ] **Alerts:** "Notify me when X drops below Y gil" (Discord webhook)
+- [ ] **Favorites:** Bookmark items, pinned to top of tables (localStorage, no auth needed)
+- [ ] **Price history charts:** Price + velocity over time (WS events provide continuous data to store)
+- [ ] **Sale activity heatmaps:** Hourly sale volume per item — "when do buyers show up?" to time listings optimally (e.g., list at 14:00 if peak sales are 15:00–20:00 UTC). Note: Universalis data has observer bias — sales are only recorded when a plugin user uploads, so overnight data may be underrepresented on quieter DCs
+- [ ] **Alerts:** "Notify me when X drops below Y gil" (Discord webhook — WS makes this near-instant)
 - [ ] **Retainer planner:** "I have 20 retainer slots — suggest best items to list"
-- [ ] **Price history charts:** Price + velocity over time (requires storing historical data)
+- [ ] **Discord OAuth** login (optional — browsing works without login, needed for persistent favorites/alerts)
 
 ---
 
 ## Phase 4: Production Readiness
 
-- [ ] **PostgreSQL** migration (from SQLite)
-- [ ] **Rate limiting** per user
+- [ ] **PostgreSQL** migration (SQLite won't scale with continuous WS writes)
 - [ ] **HTTPS** via Caddy reverse proxy + Let's Encrypt
+- [ ] **Multi-DC:** scan all DCs, each with its own WS subscription
 - [ ] **Monitoring:** health check endpoint, error alerting
 - [ ] **CI/CD:** auto-deploy on push to main
-- [ ] **Multi-DC:** scan all DCs (NA, EU, JP, OCE), users pick theirs
-- [ ] **Docker Compose** for full stack: backend + frontend + db + scheduler
+- [ ] **Rate limiting** per user
 
 ---
 
 ## Ideas / Backlog
 
-- Universalis WebSocket subscription (real-time price updates instead of polling)
 - Multi-language support
 - Item search across all scan modes
 - "What should I craft with MY retainer inventory?" mode
