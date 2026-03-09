@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phase 0 + Phase 1: DONE | Phase 2a+2b+2c: DONE**
+**Phase 0 + Phase 1: DONE | Phase 2a+2b+2c+2d: DONE | Mode Consolidation: DONE**
 
 ### Phase 0: Project Setup
 - [x] New repo created (separate from ffxiv-profit-scanner)
@@ -50,11 +50,12 @@
 ### 2b: Core Pages
 - [x] **Layout:** Header with DC/World selector (persisted in localStorage), sidebar nav, FFXIV dark theme
 - [x] **Dashboard** (`/`): Overview cards per scan type, last scan time, trigger scan button
-- [x] **Craft Scanner** (`/craft`): Sortable/filterable table (Item, Craft Cost, MB Price, Margin, Margin%, Velocity, Profit/Day)
-- [x] **Vendor Arbitrage** (`/vendor`): NPC flip opportunities table
-- [x] **Cross-World** (`/cross-world`): Buy/sell world spread table
-- [x] **Discovery** (`/discover`): High-margin items table
+- [x] **Crafting** (`/crafting`): Level-gated craft scan (Job, Level, MB Price, Velocity, Gil/Day) — *renamed from Craft/Discover*
 - [x] **Gather** (`/gather`): Gatherable items with job/level columns
+- [x] **Hunter** (`/hunter`): Mob-drop materials (MB Price, Velocity, Gil/Day, Bargain)
+- [x] **Vendor** (`/vendor`): NPC flip opportunities table
+- [x] **Workshop** (`/workshop`): FC workshop crafts with full margin analysis — *renamed from Craft*
+- [x] ~~Cross-World~~ — shelved (removed from UI, backend code kept)
 
 ### 2c: Shared Components
 - [x] `<DataTable>` — sortable, filterable, paginated (50/page), generic with TanStack Table
@@ -92,7 +93,7 @@ passive subscription model — prices stay fresh continuously.
 - [ ] Track connection state (connected / reconnecting / disconnected)
 
 ### 2.5b: Scheduler Rework
-- [ ] **Quick scans** every 2 hours — craft, vendor, cross_world, gather (cache is mostly fresh from WS)
+- [ ] **Quick scans** every 2 hours — crafting, vendor, gather, hunter, workshop (cache is mostly fresh from WS)
 - [ ] **Discovery scan** daily at 04:00 server time (quiet hours, expensive full-market sweep)
 - [ ] **Dirty-scan debounce** — when WS events update cached prices, mark affected scan types dirty; recalculate dirty scans every ~30s instead of on every event
 - [ ] Keep manual trigger endpoint as-is

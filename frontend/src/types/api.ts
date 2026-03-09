@@ -9,7 +9,7 @@ export interface IngredientCost {
   craft_savings_pct: number | null
 }
 
-export interface CraftResult {
+export interface WorkshopResult {
   item_id: number
   name: string
   mb_price: number
@@ -24,6 +24,19 @@ export interface CraftResult {
   ingredient_costs: IngredientCost[]
 }
 
+export interface CraftingResult {
+  item_id: number
+  name: string
+  job: string
+  level: number
+  mb_price: number
+  velocity: number
+  gil_per_day: number
+  is_stale: boolean
+  last_updated: number
+  bargain: BargainInfo | null
+}
+
 export interface VendorResult {
   name: string
   item_id: number
@@ -32,20 +45,6 @@ export interface VendorResult {
   markup_pct: number
   velocity: number
   daily_profit: number
-  is_stale: boolean
-  last_updated: number
-}
-
-export interface CrossWorldResult {
-  name: string
-  item_id: number
-  cheap_world: string
-  cheap_price: number
-  cheap_qty: number
-  expensive_world: string
-  expensive_price: number
-  spread_pct: number
-  net_profit: number
   is_stale: boolean
   last_updated: number
 }
@@ -72,9 +71,18 @@ export interface GatherResult {
   bargain: BargainInfo | null
 }
 
-export type DiscoverResult = CraftResult
+export interface HunterResult {
+  item_id: number
+  name: string
+  mb_price: number
+  velocity: number
+  gil_per_day: number
+  is_stale: boolean
+  last_updated: number
+  bargain: BargainInfo | null
+}
 
-export type ScanResult = CraftResult | VendorResult | CrossWorldResult | GatherResult
+export type ScanResult = WorkshopResult | CraftingResult | VendorResult | GatherResult | HunterResult
 
 export interface ScanResponse<T = ScanResult> {
   scan_type: string

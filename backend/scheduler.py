@@ -9,17 +9,17 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import db
 from config import SCAN_DCS, SCAN_INTERVAL_MINUTES
-from scanner.modes import craft_scan, vendor_arbitrage, cross_world, discover, gather_scan
+from scanner.modes import craft_scan, vendor_arbitrage, gather_scan, hunter_scan, crafting_scan
 
 log = logging.getLogger("tcs.scheduler")
 
 # Scan modes and their function signatures
 _SCAN_MODES = {
-    "craft": lambda dc: craft_scan.scan(dc),
+    "workshop": lambda dc: craft_scan.scan(dc),
+    "crafting": lambda dc: crafting_scan.scan(dc),
     "vendor": lambda dc: vendor_arbitrage.scan(dc),
-    "cross_world": lambda dc: cross_world.scan(dc),
-    "discover": lambda dc: discover.scan(dc),
     "gather": lambda dc: gather_scan.scan(dc),
+    "hunter": lambda dc: hunter_scan.scan(dc),
 }
 
 

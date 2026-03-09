@@ -5,9 +5,9 @@ import { ColumnHeader } from "@/components/data-table/column-header"
 import { ScanStatusBadge } from "@/components/scan-status-badge"
 import { useScanResults } from "@/hooks/use-scans"
 import { gil, pct, decimal, priceAge } from "@/lib/format"
-import type { DiscoverResult } from "@/types/api"
+import type { WorkshopResult } from "@/types/api"
 
-const columns: ColumnDef<DiscoverResult, unknown>[] = [
+const columns: ColumnDef<WorkshopResult, unknown>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => <ColumnHeader column={column} title="Item" />,
@@ -61,14 +61,14 @@ const columns: ColumnDef<DiscoverResult, unknown>[] = [
   },
 ]
 
-export function DiscoverPage() {
-  const { data, isLoading } = useScanResults<DiscoverResult>("discover")
+export function WorkshopPage() {
+  const { data, isLoading } = useScanResults<WorkshopResult>("workshop")
   const [filter, setFilter] = useState("")
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Discovery</h2>
+        <h2 className="text-xl font-bold">Workshop Scanner</h2>
         <ScanStatusBadge scannedAt={data?.scanned_at} />
       </div>
       <input

@@ -1,7 +1,6 @@
 import sys
 
 from scanner.api import garland, universalis
-from scanner.api.universalis import fetch_prices_lightweight
 from scanner.output import print_header, print_gather_result
 
 
@@ -55,25 +54,26 @@ def scan(
 
     _progress(1, f"Found {len(gather_items)} gatherable items, fetching prices...")
 
-    # Phase 2: Fetch prices from Universalis (only for gatherable items)
+    # Phase 2: Fetch prices from Universalis (world-specific)
     item_ids = [g["item_id"] for g in gather_items]
-    _progress(2, f"Fetching prices for {len(item_ids)} items...")
+    price_target = world or dc
+    _progress(2, f"Fetching {price_target} prices for {len(item_ids)} items...")
 
-    price_data = fetch_prices_lightweight(
-        item_ids, dc, no_cache=no_cache, allow_stale=allow_stale,
-        on_batch=lambda done, total: _progress(2, f"Fetching prices ({done}/{total} batches)..."),
+    price_data = universalis.fetch_prices(
+        item_ids, price_target, no_cache=no_cache, allow_stale=allow_stale,
+        listings=5, entries=20,
     )
 
-    # Build results
+    # Build results and filter
     results = []
     for g in gather_items:
         item_id = g["item_id"]
-        mdata = price_data.get(item_id)
-        if not mdata:
+        pd = price_data.get(item_id)
+        if not pd:
             continue
 
-        avg_price = mdata.get("averagePrice", 0)
-        velocity = mdata.get("regularSaleVelocity", 0)
+        avg_price = pd.avg_sale_price
+        velocity = pd.nq_sale_velocity
         if avg_price < min_price or velocity < min_velocity:
             continue
 
@@ -89,26 +89,10 @@ def scan(
             "mb_price": avg_price,
             "velocity": velocity,
             "gil_per_day": gil_per_day,
-            "is_stale": False,
+            "is_stale": pd.is_stale,
         })
 
     _progress(3, f"Found {len(results)} gathering opportunities")
-
-    # Phase 3: Optionally refine prices with world-specific data
-    if world and results:
-        _progress(3, f"Fetching {world} prices...")
-        result_ids = [r["item_id"] for r in results]
-        world_prices = universalis.fetch_prices(
-            result_ids, world, no_cache=no_cache, allow_stale=allow_stale,
-            listings=5, entries=20,
-        )
-        for r in results:
-            wp = world_prices.get(r["item_id"])
-            if wp and wp.avg_sale_price > 0:
-                r["mb_price"] = wp.avg_sale_price
-                r["velocity"] = wp.nq_sale_velocity
-                r["gil_per_day"] = wp.avg_sale_price * 0.95 * wp.nq_sale_velocity
-                r["is_stale"] = wp.is_stale
 
     if sort_by == "mb_price":
         results.sort(key=lambda r: r["mb_price"], reverse=True)

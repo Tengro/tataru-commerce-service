@@ -7,7 +7,7 @@ import db
 
 router = APIRouter(tags=["scans"])
 
-VALID_SCAN_TYPES = {"craft", "vendor", "cross_world", "discover", "gather"}
+VALID_SCAN_TYPES = {"workshop", "crafting", "vendor", "gather", "hunter"}
 
 # ── Response models ──────────────────────────────────────────────
 
@@ -50,20 +50,6 @@ class VendorResult(BaseModel):
     last_updated: int = 0
 
 
-class CrossWorldResult(BaseModel):
-    name: str
-    item_id: int
-    cheap_world: str
-    cheap_price: int
-    cheap_qty: int
-    expensive_world: str
-    expensive_price: float
-    spread_pct: float
-    net_profit: float
-    is_stale: bool
-    last_updated: int = 0
-
-
 class BargainInfo(BaseModel):
     price: int
     qty: int
@@ -86,6 +72,30 @@ class GatherResult(BaseModel):
     bargain: BargainInfo | None = None
 
 
+class CraftingResult(BaseModel):
+    item_id: int
+    name: str
+    job: str
+    level: int
+    mb_price: float
+    velocity: float
+    gil_per_day: float
+    is_stale: bool
+    last_updated: int = 0
+    bargain: BargainInfo | None = None
+
+
+class HunterResult(BaseModel):
+    item_id: int
+    name: str
+    mb_price: float
+    velocity: float
+    gil_per_day: float
+    is_stale: bool
+    last_updated: int = 0
+    bargain: BargainInfo | None = None
+
+
 class ScanResponse(BaseModel):
     scan_type: str
     dc: str
@@ -97,11 +107,11 @@ class ScanResponse(BaseModel):
 
 # Map scan types to their result models (for validation/docs)
 _RESULT_MODELS = {
-    "craft": CraftResult,
+    "workshop": CraftResult,
+    "crafting": CraftingResult,
     "vendor": VendorResult,
-    "cross_world": CrossWorldResult,
-    "discover": CraftResult,  # same shape as craft
     "gather": GatherResult,
+    "hunter": HunterResult,
 }
 
 
@@ -157,19 +167,19 @@ def get_scan_results(
 
 def _profit_key(scan_type: str) -> str | None:
     return {
-        "craft": "profit_per_day",
+        "workshop": "profit_per_day",
+        "crafting": "gil_per_day",
         "vendor": "daily_profit",
-        "cross_world": "net_profit",
-        "discover": "profit_per_day",
         "gather": "gil_per_day",
+        "hunter": "gil_per_day",
     }.get(scan_type)
 
 
 def _velocity_key(scan_type: str) -> str | None:
     return {
-        "craft": "sale_velocity",
+        "workshop": "sale_velocity",
+        "crafting": "velocity",
         "vendor": "velocity",
-        "cross_world": None,
-        "discover": "sale_velocity",
         "gather": "velocity",
+        "hunter": "velocity",
     }.get(scan_type)

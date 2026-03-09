@@ -7,11 +7,11 @@ import { relativeTime } from "@/lib/format"
 import { Link } from "react-router-dom"
 
 const SCAN_META: Record<string, { label: string; path: string; description: string }> = {
-  craft: { label: "Craft Scanner", path: "/craft", description: "Profitable crafts" },
-  vendor: { label: "Vendor Arbitrage", path: "/vendor", description: "NPC flip opportunities" },
-  cross_world: { label: "Cross-World", path: "/cross-world", description: "World price spreads" },
-  discover: { label: "Discovery", path: "/discover", description: "High-margin items" },
+  crafting: { label: "Crafting", path: "/crafting", description: "Profitable items to craft" },
   gather: { label: "Gather", path: "/gather", description: "Gatherable items" },
+  hunter: { label: "Hunter", path: "/hunter", description: "Mob-drop materials" },
+  vendor: { label: "Vendor", path: "/vendor", description: "NPC flip opportunities" },
+  workshop: { label: "Workshop", path: "/workshop", description: "FC workshop crafts" },
 }
 
 export function DashboardPage() {
