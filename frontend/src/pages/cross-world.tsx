@@ -4,7 +4,7 @@ import { DataTable } from "@/components/data-table/data-table"
 import { ColumnHeader } from "@/components/data-table/column-header"
 import { ScanStatusBadge } from "@/components/scan-status-badge"
 import { useScanResults } from "@/hooks/use-scans"
-import { gil, pct } from "@/lib/format"
+import { gil, pct, priceAge } from "@/lib/format"
 import type { CrossWorldResult } from "@/types/api"
 
 const columns: ColumnDef<CrossWorldResult, unknown>[] = [
@@ -40,6 +40,13 @@ const columns: ColumnDef<CrossWorldResult, unknown>[] = [
     accessorKey: "net_profit",
     header: ({ column }) => <ColumnHeader column={column} title="Net Profit" className="justify-end" />,
     cell: ({ row }) => <div className="text-right font-medium text-profit-positive">{gil(row.getValue("net_profit"))}</div>,
+  },
+  {
+    accessorKey: "last_updated",
+    header: ({ column }) => <ColumnHeader column={column} title="Updated" />,
+    cell: ({ row }) => (
+      <span className="text-xs text-muted-foreground">{priceAge(row.getValue("last_updated"))}</span>
+    ),
   },
 ]
 

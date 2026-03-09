@@ -20,6 +20,7 @@ export interface CraftResult {
   sale_velocity: number
   profit_per_day: number
   is_stale: boolean
+  last_updated: number
   ingredient_costs: IngredientCost[]
 }
 
@@ -32,6 +33,7 @@ export interface VendorResult {
   velocity: number
   daily_profit: number
   is_stale: boolean
+  last_updated: number
 }
 
 export interface CrossWorldResult {
@@ -45,6 +47,14 @@ export interface CrossWorldResult {
   spread_pct: number
   net_profit: number
   is_stale: boolean
+  last_updated: number
+}
+
+export interface BargainInfo {
+  price: number
+  qty: number
+  world: string
+  discount_pct: number
 }
 
 export interface GatherResult {
@@ -58,6 +68,8 @@ export interface GatherResult {
   velocity: number
   gil_per_day: number
   is_stale: boolean
+  last_updated: number
+  bargain: BargainInfo | null
 }
 
 export type DiscoverResult = CraftResult

@@ -34,6 +34,7 @@ class CraftResult(BaseModel):
     sale_velocity: float
     profit_per_day: float
     is_stale: bool
+    last_updated: int = 0
     ingredient_costs: list[IngredientCostOut] = []
 
 
@@ -46,6 +47,7 @@ class VendorResult(BaseModel):
     velocity: float
     daily_profit: float
     is_stale: bool
+    last_updated: int = 0
 
 
 class CrossWorldResult(BaseModel):
@@ -59,6 +61,14 @@ class CrossWorldResult(BaseModel):
     spread_pct: float
     net_profit: float
     is_stale: bool
+    last_updated: int = 0
+
+
+class BargainInfo(BaseModel):
+    price: int
+    qty: int
+    world: str
+    discount_pct: int
 
 
 class GatherResult(BaseModel):
@@ -72,6 +82,8 @@ class GatherResult(BaseModel):
     velocity: float
     gil_per_day: float
     is_stale: bool
+    last_updated: int = 0
+    bargain: BargainInfo | None = None
 
 
 class ScanResponse(BaseModel):

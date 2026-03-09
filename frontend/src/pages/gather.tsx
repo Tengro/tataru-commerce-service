@@ -4,7 +4,7 @@ import { DataTable } from "@/components/data-table/data-table"
 import { ColumnHeader } from "@/components/data-table/column-header"
 import { ScanStatusBadge } from "@/components/scan-status-badge"
 import { useScanResults } from "@/hooks/use-scans"
-import { gil, decimal } from "@/lib/format"
+import { gil, decimal, priceAge } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import type { GatherResult } from "@/types/api"
 
@@ -42,6 +42,26 @@ const columns: ColumnDef<GatherResult, unknown>[] = [
     accessorKey: "gil_per_day",
     header: ({ column }) => <ColumnHeader column={column} title="Gil/Day" className="justify-end" />,
     cell: ({ row }) => <div className="text-right font-medium text-profit-positive">{gil(row.getValue("gil_per_day"))}</div>,
+  },
+  {
+    id: "bargain",
+    header: "Bargain",
+    cell: ({ row }) => {
+      const b = row.original.bargain
+      if (!b) return null
+      return (
+        <span className="text-xs text-profit-positive">
+          {b.world}: {gil(b.price)} x{b.qty} (-{b.discount_pct}%)
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "last_updated",
+    header: ({ column }) => <ColumnHeader column={column} title="Updated" />,
+    cell: ({ row }) => (
+      <span className="text-xs text-muted-foreground">{priceAge(row.getValue("last_updated"))}</span>
+    ),
   },
 ]
 

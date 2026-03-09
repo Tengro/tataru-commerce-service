@@ -26,3 +26,11 @@ export function relativeTime(unixTimestamp: number): string {
   const days = Math.floor(hours / 24)
   return `${days}d ago`
 }
+
+/** Format a Universalis lastUploadTime (ms or seconds) as relative time. */
+export function priceAge(lastUploadTime: number | null | undefined): string {
+  if (!lastUploadTime) return "?"
+  // Universalis uses milliseconds
+  const sec = lastUploadTime > 1e12 ? lastUploadTime / 1000 : lastUploadTime
+  return relativeTime(sec)
+}

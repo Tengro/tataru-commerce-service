@@ -4,7 +4,7 @@ import { DataTable } from "@/components/data-table/data-table"
 import { ColumnHeader } from "@/components/data-table/column-header"
 import { ScanStatusBadge } from "@/components/scan-status-badge"
 import { useScanResults } from "@/hooks/use-scans"
-import { gil, pct, decimal } from "@/lib/format"
+import { gil, pct, decimal, priceAge } from "@/lib/format"
 import type { VendorResult } from "@/types/api"
 
 const columns: ColumnDef<VendorResult, unknown>[] = [
@@ -40,6 +40,13 @@ const columns: ColumnDef<VendorResult, unknown>[] = [
     accessorKey: "daily_profit",
     header: ({ column }) => <ColumnHeader column={column} title="Daily Profit" className="justify-end" />,
     cell: ({ row }) => <div className="text-right font-medium text-profit-positive">{gil(row.getValue("daily_profit"))}</div>,
+  },
+  {
+    accessorKey: "last_updated",
+    header: ({ column }) => <ColumnHeader column={column} title="Updated" />,
+    cell: ({ row }) => (
+      <span className="text-xs text-muted-foreground">{priceAge(row.getValue("last_updated"))}</span>
+    ),
   },
 ]
 

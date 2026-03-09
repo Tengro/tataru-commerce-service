@@ -4,7 +4,7 @@ import { DataTable } from "@/components/data-table/data-table"
 import { ColumnHeader } from "@/components/data-table/column-header"
 import { ScanStatusBadge } from "@/components/scan-status-badge"
 import { useScanResults } from "@/hooks/use-scans"
-import { gil, pct, decimal } from "@/lib/format"
+import { gil, pct, decimal, priceAge } from "@/lib/format"
 import type { DiscoverResult } from "@/types/api"
 
 const columns: ColumnDef<DiscoverResult, unknown>[] = [
@@ -51,6 +51,13 @@ const columns: ColumnDef<DiscoverResult, unknown>[] = [
       const v = row.getValue<number>("profit_per_day")
       return <div className={`text-right font-medium ${v > 0 ? "text-profit-positive" : "text-profit-negative"}`}>{gil(v)}</div>
     },
+  },
+  {
+    accessorKey: "last_updated",
+    header: ({ column }) => <ColumnHeader column={column} title="Updated" />,
+    cell: ({ row }) => (
+      <span className="text-xs text-muted-foreground">{priceAge(row.getValue("last_updated"))}</span>
+    ),
   },
 ]
 
