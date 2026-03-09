@@ -2,130 +2,113 @@
 
 ## Current Status
 
-**Phase 0 + Phase 1: DONE | Phase 2a+2b+2c+2d: DONE | Mode Consolidation: DONE**
+**Phase 0 + Phase 1 + Phase 2: DONE | Mode Consolidation + v1.1 fixes: DONE**
+
+Scan modes: **crafting** · **gather** · **hunter** · **seal** · **vendor** · **workshop**
+
+All modes are world-specific ("you sell where you play"), level-gated where applicable.
+
+---
+
+## What's Done
 
 ### Phase 0: Project Setup
-- [x] New repo created (separate from ffxiv-profit-scanner)
-- [x] Scanner package copied (unchanged from v0.4.2)
-- [x] Directory structure: `backend/` + `frontend/` (placeholder)
-- [x] CI: GitHub Actions, Python 3.10 + 3.12
+- [x] Separate repo from old scanner (ffxiv-profit-scanner)
+- [x] CI: GitHub Actions — Python 3.10 + 3.12 backend tests
+- [x] Docker Compose + Dockerfiles for backend + frontend
 
-### Phase 1a: FastAPI Backend
-- [x] FastAPI app with CORS, lifespan management
-- [x] Pydantic response models for all 5 scan types
-- [x] Endpoints: `GET /api/v1/scans/{type}`, `/status`, `/worlds`
-- [x] Query params: `sort_by`, `min_profit`, `min_velocity`, `limit`
-- [x] Swagger docs at `/docs`
+### Phase 1: FastAPI Backend
+- [x] FastAPI app with CORS, lifespan management, Swagger docs
+- [x] Pydantic response models for 7 scan types (workshop, crafting, vendor, gather, hunter, seal + dashboard)
+- [x] Endpoints: `GET /api/v1/scans/{type}`, `/status`, `/worlds`, `POST /api/v1/scans/trigger`
+- [x] APScheduler runs all modes hourly, non-blocking startup
+- [x] SQLite-backed API cache (`api_cache` table, TTL, allow_stale)
+- [x] 32 tests passing
 
-### Phase 1b: Scheduler
-- [x] APScheduler runs all scan modes hourly for configured DCs
-- [x] Non-blocking startup (initial scan runs in background thread)
-- [x] Results stored in SQLite `scan_results` table
-- [x] `POST /api/v1/scans/trigger` for manual scan kicks
-- [x] Logging: scan duration, result counts, errors
+### Phase 2: React Frontend
+- [x] Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui
+- [x] TanStack Query v5 + TanStack Table v8
+- [x] Dashboard with scan status cards + manual trigger
+- [x] 6 scan pages: Crafting, Gather, Hunter, Vendor, Seals, Workshop
+- [x] Sortable/filterable/paginated tables, stale row dimming, bargain column
+- [x] DC/World selector persisted in localStorage
+- [x] Mobile-responsive (sidebar collapses to hamburger)
+- [x] nginx reverse proxy + SPA fallback
 
-### Phase 1c: DB-backed API cache
-- [x] `api_cache` SQLite table (namespace, key, data, cached_at)
-- [x] Rewrote `scanner/cache.py` — same `get()`/`put()` interface, backed by SQLite
-- [x] TTL checks via SQL, `namespace_age()` via `MAX(cached_at)` query
-- [x] 9 cache tests (TTL expiry, allow_stale, clear, namespace isolation)
-- [x] Everything in one DB file (`data/tcs.db`)
-
-### Phase 1 totals
-- 32 tests passing
-- Backend verified end-to-end: real Chaos DC scan data served via API
-- Docker Compose + Dockerfile ready
+### Mode Consolidation (v1.0 → v1.1)
+- [x] Renamed Craft → Workshop, removed Cross-World + Discover
+- [x] Added Crafting (level-gated), Hunter (mob drops via `drops` field), Seal arbitrage
+- [x] All modes world-specific, gather simplified to single fetch
+- [x] Hunter detection fixed: uses `drops` field, not `ventures` heuristic
 
 ---
 
-## Phase 2: React Frontend (MVP) — DONE
+## Next Steps — Prioritized
 
-### 2a: Project Setup
-- [x] Vite + React 19 + TypeScript
-- [x] Tailwind CSS v4 + shadcn/ui (base-ui component library)
-- [x] React Router v7 for navigation
-- [x] TanStack Query v5 for API data fetching + client-side caching
-- [x] TanStack Table v8 for headless table logic
+### Tier 1: Smoke Test & Ship (immediate)
 
-### 2b: Core Pages
-- [x] **Layout:** Header with DC/World selector (persisted in localStorage), sidebar nav, FFXIV dark theme
-- [x] **Dashboard** (`/`): Overview cards per scan type, last scan time, trigger scan button
-- [x] **Crafting** (`/crafting`): Level-gated craft scan (Job, Level, MB Price, Velocity, Gil/Day) — *renamed from Craft/Discover*
-- [x] **Gather** (`/gather`): Gatherable items with job/level columns
-- [x] **Hunter** (`/hunter`): Mob-drop materials (MB Price, Velocity, Gil/Day, Bargain)
-- [x] **Vendor** (`/vendor`): NPC flip opportunities table
-- [x] **Workshop** (`/workshop`): FC workshop crafts with full margin analysis — *renamed from Craft*
-- [x] ~~Cross-World~~ — shelved (removed from UI, backend code kept)
+Get TCS running end-to-end in Docker. Verify it works before adding features.
 
-### 2c: Shared Components
-- [x] `<DataTable>` — sortable, filterable, paginated (50/page), generic with TanStack Table
-- [x] `<ScanStatusBadge>` — color-coded freshness ("15m ago" / "2h ago")
-- [x] Gil formatting via `format.ts` helpers (gil, pct, decimal, relativeTime)
-- [x] Stale row dimming (opacity on is_stale rows)
-- [x] Mobile-responsive: sidebar collapses to hamburger menu
+- [ ] `docker compose up --build` — verify all 6 scan modes run and populate data
+- [ ] Verify frontend loads, tables populate, DC/world selector works
+- [ ] Fix any scan mode failures (crafting/hunter/seal are new, never tested in TCS context)
+- [ ] Add frontend build step to CI (`npm run build` in GitHub Actions)
 
-### 2d: Docker + Infrastructure
-- [x] Frontend Dockerfile (multi-stage: node build → nginx)
-- [x] nginx config: proxies `/api/` to backend, SPA fallback
-- [x] docker-compose updated with frontend service
+### Tier 2: UI Polish (before sharing with anyone)
 
-### Remaining for Phase 2 polish (can interleave with 2.5)
-- [ ] Click row → detail view (ingredient breakdown for craft/discover)
-- [ ] Item images (XIVAPI icon URLs)
-- [ ] Job icons for gather/craft pages
-- [ ] Card layout on very small screens (currently table-only)
-- [ ] Frontend CI (`npm run build` in GitHub Actions)
+Small improvements that make the difference between "prototype" and "usable tool."
 
----
+- [ ] Click row → detail view (ingredient breakdown for Workshop, Universalis link for others)
+- [ ] Item images via XIVAPI icon URLs
+- [ ] Job icons for Gather/Crafting pages (MIN/BTN/FSH, CRP/BSM/etc.)
+- [ ] Card layout fallback on very small screens
 
-## Phase 2.5: Real-Time Price Feed (WebSocket + Hybrid Polling)
+### Tier 3: WebSocket + Hybrid Polling (Phase 2.5)
 
-Universalis provides a WebSocket API (`wss://universalis.app/api/v2/ws`, BSON protocol) with
-real-time events for listing and sale changes. This replaces heavy hourly polling with a
-passive subscription model — prices stay fresh continuously.
+The big differentiator — near-real-time price updates without hammering Universalis.
 
-### 2.5a: WebSocket Client
-- [ ] `scanner/ws_client.py` — async WebSocket client using `websockets` + `pymongo` (BSON)
+#### 3a: WebSocket Client
+- [ ] `scanner/ws_client.py` — async client using `websockets` + `pymongo` (BSON)
 - [ ] Subscribe to `listings/add` + `sales/add` per configured DC
 - [ ] Auto-reconnect with exponential backoff (1s → 2s → … → 60s cap)
 - [ ] Parse events → update `api_cache` with fresh price data
-- [ ] Store raw `sales/add` events in `price_history` table (item_id, world, price, qty, timestamp) for Phase 3 analytics
+- [ ] Store `sales/add` events in `price_history` table for analytics
 - [ ] Track connection state (connected / reconnecting / disconnected)
 
-### 2.5b: Scheduler Rework
-- [ ] **Quick scans** every 2 hours — crafting, vendor, gather, hunter, workshop (cache is mostly fresh from WS)
-- [ ] **Discovery scan** daily at 04:00 server time (quiet hours, expensive full-market sweep)
-- [ ] **Dirty-scan debounce** — when WS events update cached prices, mark affected scan types dirty; recalculate dirty scans every ~30s instead of on every event
+#### 3b: Scheduler Rework
+- [ ] **Quick scans** every 2h — crafting, vendor, gather, hunter, seal, workshop
+- [ ] **Full market sweep** daily at 04:00 server time (quiet hours)
+- [ ] **Dirty-scan debounce** — WS events mark affected scans dirty; recalculate every ~30s
 - [ ] Keep manual trigger endpoint as-is
 
-### 2.5c: Config + Status
-- [ ] `WS_ENABLED` env var (default `true`) — kill switch for WebSocket
-- [ ] `QUICK_SCAN_INTERVAL_HOURS` env var (default `2`)
-- [ ] `DISCOVERY_CRON` env var (default `"0 4 * * *"`)
-- [ ] `GET /api/v1/status` — expose WS connection state + last event timestamp
+#### 3c: Config
+- [ ] `WS_ENABLED` env var (default `true`)
+- [ ] `QUICK_SCAN_INTERVAL_HOURS` (default `2`)
+- [ ] `DISCOVERY_CRON` (default `"0 4 * * *"`)
+- [ ] Expose WS state in `GET /api/v1/status`
 
-### 2.5d: Frontend
-- [ ] Dashboard: WebSocket status indicator (green = live feed, yellow = reconnecting, red = polling only)
-- [ ] Show data freshness more prominently (near-real-time vs hours old)
+#### 3d: Frontend
+- [ ] Dashboard: WebSocket status indicator (green/yellow/red)
+- [ ] Data freshness badges (near-real-time vs hours old)
 
----
+### Tier 4: User Features (Phase 3)
 
-## Phase 3: User Features
+Features that turn TCS from "data viewer" into "market assistant."
 
-- [ ] **Favorites:** Bookmark items, pinned to top of tables (localStorage, no auth needed)
-- [ ] **Price history charts:** Price + velocity over time (WS events provide continuous data to store)
-- [ ] **Sale activity heatmaps:** Hourly sale volume per item — "when do buyers show up?" to time listings optimally (e.g., list at 14:00 if peak sales are 15:00–20:00 UTC). Note: Universalis data has observer bias — sales are only recorded when a plugin user uploads, so overnight data may be underrepresented on quieter DCs
-- [ ] **Alerts:** "Notify me when X drops below Y gil" (Discord webhook — WS makes this near-instant)
+- [ ] **Favorites:** Bookmark items, pin to top of tables (localStorage, no auth)
+- [ ] **Price history charts:** Price + velocity over time (needs `price_history` from Tier 3)
+- [ ] **Sale activity heatmaps:** Hourly sale volume — "when do buyers show up?" (observer bias caveat on quiet DCs)
+- [ ] **Discord alerts:** "Notify me when X drops below Y gil" via webhook (WS makes this near-instant)
 - [ ] **Retainer planner:** "I have 20 retainer slots — suggest best items to list"
-- [ ] **Discord OAuth** login (optional — browsing works without login, needed for persistent favorites/alerts)
+- [ ] **Discord OAuth** (optional — browsing works without login, needed for persistent favorites/alerts)
 
----
+### Tier 5: Production Readiness (Phase 4)
 
-## Phase 4: Production Readiness
+For when TCS needs to serve more than one person.
 
 - [ ] **PostgreSQL** migration (SQLite won't scale with continuous WS writes)
 - [ ] **HTTPS** via Caddy reverse proxy + Let's Encrypt
-- [ ] **Multi-DC:** scan all DCs, each with its own WS subscription
+- [ ] **Multi-DC** scanning, each with own WS subscription
 - [ ] **Monitoring:** health check endpoint, error alerting
 - [ ] **CI/CD:** auto-deploy on push to main
 - [ ] **Rate limiting** per user
@@ -134,7 +117,8 @@ passive subscription model — prices stay fresh continuously.
 
 ## Ideas / Backlog
 
-- Multi-language support
+- Multi-language support (JP/DE/FR item names)
 - Item search across all scan modes
 - "What should I craft with MY retainer inventory?" mode
 - Gil/hour estimates for gathering (factoring in timed node rotations)
+- Craftsim-style ingredient cost breakdown for Crafting mode (currently price/velocity only — full margins in Workshop only)
