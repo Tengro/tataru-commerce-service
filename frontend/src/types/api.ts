@@ -82,7 +82,19 @@ export interface HunterResult {
   bargain: BargainInfo | null
 }
 
-export type ScanResult = WorkshopResult | CraftingResult | VendorResult | GatherResult | HunterResult
+export interface SealResult {
+  item_id: number
+  name: string
+  seal_cost: number
+  mb_price: number
+  gil_per_seal: number
+  velocity: number
+  daily_profit: number
+  is_stale: boolean
+  last_updated: number
+}
+
+export type ScanResult = WorkshopResult | CraftingResult | VendorResult | GatherResult | HunterResult | SealResult
 
 export interface ScanResponse<T = ScanResult> {
   scan_type: string

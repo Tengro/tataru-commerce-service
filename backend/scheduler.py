@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import db
 from config import SCAN_DCS, SCAN_INTERVAL_MINUTES
-from scanner.modes import craft_scan, vendor_arbitrage, gather_scan, hunter_scan, crafting_scan
+from scanner.modes import craft_scan, vendor_arbitrage, gather_scan, hunter_scan, crafting_scan, seal_scan
 
 log = logging.getLogger("tcs.scheduler")
 
@@ -20,6 +20,7 @@ _SCAN_MODES = {
     "vendor": lambda dc: vendor_arbitrage.scan(dc),
     "gather": lambda dc: gather_scan.scan(dc),
     "hunter": lambda dc: hunter_scan.scan(dc),
+    "seal": lambda dc: seal_scan.scan(dc),
 }
 
 

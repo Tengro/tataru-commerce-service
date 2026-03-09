@@ -11,6 +11,7 @@ const SCAN_META: Record<string, { label: string; path: string; description: stri
   gather: { label: "Gather", path: "/gather", description: "Gatherable items" },
   hunter: { label: "Hunter", path: "/hunter", description: "Mob-drop materials" },
   vendor: { label: "Vendor", path: "/vendor", description: "NPC flip opportunities" },
+  seal: { label: "Seals", path: "/seal", description: "GC seal → gil conversion" },
   workshop: { label: "Workshop", path: "/workshop", description: "FC workshop crafts" },
 }
 

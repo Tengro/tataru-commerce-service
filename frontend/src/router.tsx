@@ -5,6 +5,7 @@ import { CraftingPage } from "./pages/crafting"
 import { GatherPage } from "./pages/gather"
 import { HunterPage } from "./pages/hunter"
 import { VendorPage } from "./pages/vendor"
+import { SealPage } from "./pages/seal"
 import { WorkshopPage } from "./pages/workshop"
 import { NotFoundPage } from "./pages/not-found"
 
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: "gather", element: <GatherPage /> },
       { path: "hunter", element: <HunterPage /> },
       { path: "vendor", element: <VendorPage /> },
+      { path: "seal", element: <SealPage /> },
       { path: "workshop", element: <WorkshopPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],

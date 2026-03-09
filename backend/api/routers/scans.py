@@ -7,7 +7,7 @@ import db
 
 router = APIRouter(tags=["scans"])
 
-VALID_SCAN_TYPES = {"workshop", "crafting", "vendor", "gather", "hunter"}
+VALID_SCAN_TYPES = {"workshop", "crafting", "vendor", "gather", "hunter", "seal"}
 
 # ── Response models ──────────────────────────────────────────────
 
@@ -96,6 +96,18 @@ class HunterResult(BaseModel):
     bargain: BargainInfo | None = None
 
 
+class SealResult(BaseModel):
+    item_id: int
+    name: str
+    seal_cost: int
+    mb_price: float
+    gil_per_seal: float
+    velocity: float
+    daily_profit: float
+    is_stale: bool
+    last_updated: int = 0
+
+
 class ScanResponse(BaseModel):
     scan_type: str
     dc: str
@@ -112,6 +124,7 @@ _RESULT_MODELS = {
     "vendor": VendorResult,
     "gather": GatherResult,
     "hunter": HunterResult,
+    "seal": SealResult,
 }
 
 
@@ -172,6 +185,7 @@ def _profit_key(scan_type: str) -> str | None:
         "vendor": "daily_profit",
         "gather": "gil_per_day",
         "hunter": "gil_per_day",
+        "seal": "daily_profit",
     }.get(scan_type)
 
 
@@ -182,4 +196,5 @@ def _velocity_key(scan_type: str) -> str | None:
         "vendor": "velocity",
         "gather": "velocity",
         "hunter": "velocity",
+        "seal": "velocity",
     }.get(scan_type)
